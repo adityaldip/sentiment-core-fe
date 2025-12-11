@@ -12,6 +12,55 @@ const getApiUrl = (path: string) => {
   return `/api/proxy/${path}`;
 };
 
+// Helper function to parse error messages from API responses
+const parseErrorMessage = (errorData: any, status: number, statusText: string): string => {
+  // If details is a JSON string (from proxy), parse it
+  if (errorData.details && typeof errorData.details === 'string') {
+    try {
+      const details = JSON.parse(errorData.details);
+      if (details.detail && Array.isArray(details.detail) && details.detail.length > 0) {
+        // Extract error messages from validation errors
+        const messages = details.detail.map((err: any) => {
+          if (err.msg) return err.msg;
+          if (err.message) return err.message;
+          if (err.loc && err.loc.length > 0) {
+            return `${err.loc.join('.')}: ${err.msg || JSON.stringify(err)}`;
+          }
+          return JSON.stringify(err);
+        }).join('\n');
+        return messages;
+      } else if (details.detail) {
+        return typeof details.detail === 'string' ? details.detail : JSON.stringify(details.detail);
+      }
+    } catch (e) {
+      // If parsing fails, use the details string as is
+      return errorData.details;
+    }
+  }
+  
+  // Handle direct detail (array of validation errors)
+  if (errorData.detail) {
+    if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
+      const messages = errorData.detail.map((err: any) => {
+        if (err.msg) return err.msg;
+        if (err.message) return err.message;
+        if (err.loc && err.loc.length > 0) {
+          return `${err.loc.join('.')}: ${err.msg || JSON.stringify(err)}`;
+        }
+        return JSON.stringify(err);
+      }).join('\n');
+      return messages;
+    } else if (typeof errorData.detail === 'string') {
+      return errorData.detail;
+    } else {
+      return JSON.stringify(errorData.detail);
+    }
+  }
+  
+  // Fallback to error or message fields
+  return errorData.error || errorData.message || `HTTP ${status}: ${statusText}`;
+};
+
 // Types
 export interface HealthCheckResponse {
   status: string;
@@ -257,7 +306,7 @@ export const api = {
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
       throw new Error(errorMessage);
     }
     return response.json();
@@ -310,7 +359,7 @@ export const api = {
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
       throw new Error(errorMessage);
     }
     return response.json();
@@ -325,7 +374,7 @@ export const api = {
     });
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
       throw new Error(errorMessage);
     }
     return response.json();
