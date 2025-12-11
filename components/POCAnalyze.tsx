@@ -21,7 +21,7 @@ export default function POCAnalyze() {
       const data = await api.analyzePOC(formData);
       setResult(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to analyze');
+      setError(err.message || 'Failed to analyze');
     } finally {
       setLoading(false);
     }

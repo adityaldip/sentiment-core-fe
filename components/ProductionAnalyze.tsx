@@ -20,7 +20,7 @@ export default function ProductionAnalyze() {
       const data = await api.analyzeProduction(formData);
       setResult(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to analyze');
+      setError(err.message || 'Failed to analyze');
     } finally {
       setLoading(false);
     }

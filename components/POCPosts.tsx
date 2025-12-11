@@ -23,7 +23,7 @@ export default function POCPosts() {
       const data = await api.getPOCPosts(filters);
       setPosts(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to load posts');
+      setError(err.message || 'Failed to load posts');
     } finally {
       setLoading(false);
     }

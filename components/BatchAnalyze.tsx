@@ -50,7 +50,7 @@ export default function BatchAnalyze() {
       const data = await api.analyzeBatch({ items: validItems });
       setResult(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to analyze batch');
+      setError(err.message || 'Failed to analyze batch');
     } finally {
       setLoading(false);
     }

@@ -26,7 +26,7 @@ export default function PostsList() {
       const data = await api.getPosts(params);
       setPosts(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to load posts');
+      setError(err.message || 'Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -201,19 +201,99 @@ export default function PostsList() {
                   </div>
                   <div>
                     <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      {/* First Page */}
+                      <button
+                        onClick={() => handlePageChange(0)}
+                        disabled={!posts.pagination.has_prev}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="First page"
+                      >
+                        ««
+                      </button>
+                      {/* Previous */}
                       <button
                         onClick={() => handlePageChange(Math.max(0, posts.pagination.offset - (posts.pagination.limit || 50)))}
                         disabled={!posts.pagination.has_prev}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Previous
                       </button>
+                      {/* Page Numbers */}
+                      {(() => {
+                        const currentPage = Math.floor(posts.pagination.offset / (posts.pagination.limit || 50)) + 1;
+                        const totalPages = posts.pagination.total_pages || Math.ceil(posts.pagination.total / (posts.pagination.limit || 50));
+                        const pages: (number | string)[] = [];
+                        
+                        if (totalPages <= 7) {
+                          // Show all pages if 7 or less
+                          for (let i = 1; i <= totalPages; i++) {
+                            pages.push(i);
+                          }
+                        } else {
+                          // Show first, last, current, and neighbors
+                          if (currentPage <= 3) {
+                            for (let i = 1; i <= 4; i++) pages.push(i);
+                            pages.push('...');
+                            pages.push(totalPages);
+                          } else if (currentPage >= totalPages - 2) {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+                          } else {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                            pages.push('...');
+                            pages.push(totalPages);
+                          }
+                        }
+                        
+                        return pages.map((page, idx) => {
+                          if (page === '...') {
+                            return (
+                              <span key={`ellipsis-${idx}`} className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                ...
+                              </span>
+                            );
+                          }
+                          const pageNum = page as number;
+                          const pageOffset = (pageNum - 1) * (posts.pagination.limit || 50);
+                          const isCurrentPage = pageNum === currentPage;
+                          
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageOffset)}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                isCurrentPage
+                                  ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
+                                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        });
+                      })()}
+                      {/* Next */}
                       <button
                         onClick={() => handlePageChange(posts.pagination.offset + (posts.pagination.limit || 50))}
                         disabled={!posts.pagination.has_next}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next
+                      </button>
+                      {/* Last Page */}
+                      <button
+                        onClick={() => {
+                          const lastPageOffset = ((posts.pagination.total_pages || Math.ceil(posts.pagination.total / (posts.pagination.limit || 50))) - 1) * (posts.pagination.limit || 50);
+                          handlePageChange(lastPageOffset);
+                        }}
+                        disabled={!posts.pagination.has_next}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Last page"
+                      >
+                        »»
                       </button>
                     </nav>
                   </div>
@@ -226,7 +306,7 @@ export default function PostsList() {
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Raw Response</h2>
-              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900">
+              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900 max-h-96">
                 {JSON.stringify(posts, null, 2)}
               </pre>
             </div>

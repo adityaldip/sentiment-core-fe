@@ -2,20 +2,15 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9014';
 
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Separate client for internal API routes (relative URLs)
-const internalApiClient = axios.create({
-  baseURL: typeof window !== 'undefined' ? '' : `http://localhost:${process.env.PORT || 3000}`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+// Use Next.js API routes as proxy to avoid CORS and Mixed Content issues
+// Always use proxy route from client-side to avoid Mixed Content errors
+const getApiUrl = (path: string) => {
+  // Handle root path
+  if (!path || path === '') {
+    return '/api/proxy';
+  }
+  return `/api/proxy/${path}`;
+};
 
 // Types
 export interface HealthCheckResponse {
@@ -231,19 +226,41 @@ export interface PostsParams {
 export const api = {
   // Health Check
   async getRoot(): Promise<RootResponse> {
-    const response = await apiClient.get<RootResponse>('/');
-    return response.data;
+    const url = getApiUrl('');
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   async getHealth(): Promise<HealthCheckResponse> {
-    const response = await apiClient.get<HealthCheckResponse>('/api/v1/sentiment/health');
-    return response.data;
+    const url = getApiUrl('api/v1/sentiment/health');
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   // POC Endpoints
   async analyzePOC(data: POCAnalyzeRequest): Promise<POCAnalyzeResponse> {
-    const response = await apiClient.post<POCAnalyzeResponse>('/api/v1/sentiment/analyze/poc', data);
-    return response.data;
+    const url = getApiUrl('api/v1/sentiment/analyze/poc');
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   async getPOCStatistics(params?: {
@@ -251,28 +268,67 @@ export const api = {
     date_from?: string;
     date_to?: string;
   }): Promise<POCStatisticsResponse> {
-    const response = await apiClient.get<POCStatisticsResponse>('/api/v1/sentiment/poc/statistics', {
-      params,
-    });
-    return response.data;
+    const queryParams = new URLSearchParams();
+    if (params?.platform) queryParams.append('platform', params.platform);
+    if (params?.date_from) queryParams.append('date_from', params.date_from);
+    if (params?.date_to) queryParams.append('date_to', params.date_to);
+    const url = getApiUrl(`api/v1/sentiment/poc/statistics${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   async getPOCPosts(params?: POCPostsParams): Promise<POCPostsResponse> {
-    const response = await apiClient.get<POCPostsResponse>('/api/v1/sentiment/poc/posts', {
-      params,
-    });
-    return response.data;
+    const queryParams = new URLSearchParams();
+    if (params?.platform) queryParams.append('platform', params.platform);
+    if (params?.sentiment) queryParams.append('sentiment', params.sentiment);
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+    if (params?.order_by) queryParams.append('order_by', params.order_by);
+    if (params?.order_dir) queryParams.append('order_dir', params.order_dir);
+    const url = getApiUrl(`api/v1/sentiment/poc/posts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   // Production Endpoints
   async analyzeProduction(data: ProductionAnalyzeRequest): Promise<ProductionAnalyzeResponse> {
-    const response = await apiClient.post<ProductionAnalyzeResponse>('/api/v1/sentiment/analyze', data);
-    return response.data;
+    const url = getApiUrl('api/v1/sentiment/analyze');
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   async analyzeBatch(data: BatchAnalyzeRequest): Promise<BatchAnalyzeResponse> {
-    const response = await apiClient.post<BatchAnalyzeResponse>('/api/v1/sentiment/batch', data);
-    return response.data;
+    const url = getApiUrl('api/v1/sentiment/batch');
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = errorData.detail || errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}`;
+      throw new Error(errorMessage);
+    }
+    return response.json();
   },
 
   // Posts API (via Next.js API route to avoid CORS)

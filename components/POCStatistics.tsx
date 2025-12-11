@@ -24,7 +24,7 @@ export default function POCStatistics() {
       const data = await api.getPOCStatistics(params);
       setStats(data);
     } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Failed to load statistics');
+      setError(err.message || 'Failed to load statistics');
     } finally {
       setLoading(false);
     }
