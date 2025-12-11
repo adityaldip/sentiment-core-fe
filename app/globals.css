@@ -17,13 +17,22 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: rgb(17, 24, 39); /* text-gray-900 */
   background: linear-gradient(
       to bottom,
       transparent,
       rgb(var(--background-end-rgb))
     )
     rgb(var(--background-start-rgb));
+}
+
+/* Ensure all text elements have dark color by default */
+input, textarea, select {
+  color: rgb(17, 24, 39); /* text-gray-900 */
+}
+
+pre, code {
+  color: rgb(17, 24, 39); /* text-gray-900 */
 }
 
 @layer utilities {

@@ -145,7 +145,7 @@ export default function HealthPage() {
               {rootStatus && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Root:</h3>
-                  <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto">
+                  <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900">
                     {JSON.stringify(rootStatus, null, 2)}
                   </pre>
                 </div>
@@ -153,7 +153,7 @@ export default function HealthPage() {
               {healthStatus && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Health:</h3>
-                  <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto">
+                  <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900">
                     {JSON.stringify(healthStatus, null, 2)}
                   </pre>
                 </div>

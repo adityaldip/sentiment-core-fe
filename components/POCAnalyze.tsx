@@ -181,7 +181,7 @@ export default function POCAnalyze() {
 
             <div className="mt-4 pt-4 border-t">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Raw Response:</h3>
-              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto">
+              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900">
                 {JSON.stringify(result, null, 2)}
               </pre>
             </div>

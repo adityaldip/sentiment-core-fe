@@ -9,6 +9,14 @@ const apiClient = axios.create({
   },
 });
 
+// Separate client for internal API routes (relative URLs)
+const internalApiClient = axios.create({
+  baseURL: typeof window !== 'undefined' ? '' : `http://localhost:${process.env.PORT || 3000}`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Types
 export interface HealthCheckResponse {
   status: string;
@@ -179,6 +187,46 @@ export interface BatchAnalyzeResponse {
   processing_time: number;
 }
 
+// Posts API Types
+export interface Post {
+  id: number;
+  platform: string;
+  source: string;
+  post_id: string;
+  account_username: string;
+  content: string;
+  media_urls: string[];
+  engagement: Record<string, any>;
+  posted_at: string;
+  crawled_at: string;
+  raw_data: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostsPagination {
+  count: number;
+  current_page: number;
+  has_next: boolean;
+  has_prev: boolean;
+  limit: number;
+  offset: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface PostsResponse {
+  data: Post[];
+  pagination: PostsPagination;
+}
+
+export interface PostsParams {
+  limit?: number;
+  offset?: number;
+  platform?: string;
+  source?: string;
+}
+
 // API Functions
 export const api = {
   // Health Check
@@ -225,6 +273,24 @@ export const api = {
   async analyzeBatch(data: BatchAnalyzeRequest): Promise<BatchAnalyzeResponse> {
     const response = await apiClient.post<BatchAnalyzeResponse>('/api/v1/sentiment/batch', data);
     return response.data;
+  },
+
+  // Posts API (via Next.js API route to avoid CORS)
+  async getPosts(params?: PostsParams): Promise<PostsResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.offset) queryParams.append('offset', params.offset.toString());
+    if (params?.platform) queryParams.append('platform', params.platform);
+    if (params?.source) queryParams.append('source', params.source);
+    
+    const url = `/api/posts${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    // Use fetch for relative URLs to avoid baseURL issues
+    const response = await fetch(url);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
   },
 };
 

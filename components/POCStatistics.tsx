@@ -300,7 +300,7 @@ export default function POCStatistics() {
           <div className="bg-white shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Raw Response</h2>
-              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto">
+              <pre className="bg-gray-50 p-4 rounded text-xs overflow-auto text-gray-900">
                 {JSON.stringify(stats, null, 2)}
               </pre>
             </div>
