@@ -11,7 +11,8 @@ export default function Navigation() {
     { href: '/health', label: 'Health Check' },
     { href: '/poc', label: 'POC' },
     { href: '/production', label: 'Production' },
-    { href: '/posts', label: 'Posts' },
+    { href: '/posts', label: 'Posts APIFY' },
+    { href: '/apify', label: 'APIFY' },
   ];
 
   return (

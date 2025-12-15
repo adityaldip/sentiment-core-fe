@@ -271,6 +271,53 @@ export interface PostsParams {
   source?: string;
 }
 
+// Apify API Types
+export interface ApifyStartUrl {
+  url: string;
+}
+
+export interface ApifyCrawlFacebookRequest {
+  startUrls: ApifyStartUrl[];
+  resultsLimit?: number;
+  captionText?: boolean;
+}
+
+export interface ApifyCrawlInstagramRequest {
+  addParentData?: boolean;
+  directUrls?: string[];
+  enhanceUserSearchWithFacebookPage?: boolean;
+  isUserReelFeedURL?: boolean;
+  isUserTaggedFeedURL?: boolean;
+  resultsLimit?: number;
+  resultsType?: string;
+  searchLimit?: number;
+  searchType?: string;
+}
+
+export interface ApifyCrawlTikTokRequest {
+  profiles?: string[];
+  resultsPerPage?: number;
+}
+
+export interface ApifyCrawlTwitterRequest {
+  maxItems?: number;
+  searchTerms?: string[];
+  sort?: string;
+  startUrls?: string[];
+}
+
+export interface ApifyCrawlYouTubeRequest {
+  startUrls?: string[];
+  maxResults?: number;
+}
+
+export interface ApifyCrawlResponse {
+  id?: string;
+  status?: string;
+  message?: string;
+  [key: string]: any;
+}
+
 // API Functions
 export const api = {
   // Health Check
@@ -394,6 +441,82 @@ export const api = {
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: response.statusText }));
       throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  },
+
+  // Apify API (via Next.js API route to avoid CORS)
+  async crawlFacebook(data: ApifyCrawlFacebookRequest): Promise<ApifyCrawlResponse> {
+    const url = '/api/apify/api/v1/crawl/facebook';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  async crawlInstagram(data: ApifyCrawlInstagramRequest): Promise<ApifyCrawlResponse> {
+    const url = '/api/apify/api/v1/crawl/instagram';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  async crawlTikTok(data: ApifyCrawlTikTokRequest): Promise<ApifyCrawlResponse> {
+    const url = '/api/apify/api/v1/crawl/tiktok';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  async crawlTwitter(data: ApifyCrawlTwitterRequest): Promise<ApifyCrawlResponse> {
+    const url = '/api/apify/api/v1/crawl/twitter';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
+      throw new Error(errorMessage);
+    }
+    return response.json();
+  },
+
+  async crawlYouTube(data: ApifyCrawlYouTubeRequest): Promise<ApifyCrawlResponse> {
+    const url = '/api/apify/api/v1/crawl/youtube';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      const errorMessage = parseErrorMessage(errorData, response.status, response.statusText);
+      throw new Error(errorMessage);
     }
     return response.json();
   },
